@@ -1,12 +1,12 @@
 const { stickers_ids } = require("./constants");
 const getWhatsappMsg = (message) => {
   try {
-    console.log("message is", message);
     const { type } = message;
     if (!type) return "Unrecognized Msg";
 
     let msg = "";
     if (type === "text") msg = message["text"]["body"];
+    if (type === "document") msg = "";
     else if (type === "button") msg = message["button"]["text"];
     else if (
       type === "interactive" &&
