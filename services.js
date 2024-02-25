@@ -1,6 +1,7 @@
 const { stickers_ids } = require("./constants");
 const getWhatsappMsg = (message) => {
   try {
+    console.log("message is", message);
     const { type } = message;
     if (!type) return "Unrecognized Msg";
 
@@ -27,7 +28,6 @@ const getWhatsappMsg = (message) => {
 
 const sendWhatsappMessage = async (body) => {
   try {
-    console.log("body is " ,process.env.WHATSAPP_URL );
     const whatsappToken = process.env.WHATSAPP_ACCESS_TOKEN;
     const response = await fetch(process.env.WHATSAPP_URL, {
       method: "POST",
