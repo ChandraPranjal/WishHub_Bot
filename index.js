@@ -40,10 +40,10 @@ app.get("/webhook", (req, res) => {
 app.post("/webhook", (req, res) => {
   try {
     console.log("POST /webhook");
-    console.log("req.body is ", req.body);
     const { entry } = req.body;
     const { changes } = entry[0];
     const { value } = changes[0];
+    console.log("messages in req.body is ", value["messages"]);
     const message = value["messages"][0];
     const number = message["from"];
     const messageId = message["id"];
