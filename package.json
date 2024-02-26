@@ -9,6 +9,7 @@
   "author": "ChandraPranjal",
   "license": "ISC",
   "dependencies": {
+    "axios": "^1.6.7",
     "csv-parser": "^3.0.0",
     "csv-writer": "^1.6.0",
     "dotenv": "^16.4.5",
