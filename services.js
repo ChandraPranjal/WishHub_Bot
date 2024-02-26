@@ -298,14 +298,16 @@ const administrator_chatbot = async (
   id_of_msg_that_was_replied
 ) => {
   try {
+    const type = message_body.type;
     console.log("text is", text);
+
     // const lowercase_text = text.toLowerCase();
     const data = text_message(number, text);
     // await sendWhatsappMessage(data);
     const list = [];
     const markMessagesAsReadData = markMessagesAsRead(messageId);
     list.push(markMessagesAsReadData);
-    const type = message_body.type;
+
     if (text === "WishHub") {
       // await sendWhatsappMessage(text_message(number, "Yes WishHub"));
       const body = `Hello ${name}, would you like to add items to inventory?`;
@@ -358,6 +360,7 @@ const administrator_chatbot = async (
         const docId = message_body.document.id;
         doucment_to_json_handeler(docId);
         console.log("product Data is ", productData);
+        await sendWhatsappMessage(text_message(number, productData));
       }
       const lowercase_text = text.toLowerCase();
       const data = text_message(number, lowercase_text);
