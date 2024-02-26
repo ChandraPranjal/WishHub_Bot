@@ -49,8 +49,11 @@ app.post("/webhook", (req, res) => {
     const messageId = message["id"];
     const contacts = value["contacts"][0];
     const name = contacts["profile"]["name"];
+    let id_of_msg_that_was_replied = null;
+    if ("context" in value["messages"])
+      id_of_msg_that_was_replied = value["messages"]?.["context"]["id"];
     const text = getWhatsappMsg(message);
-    administrator_chatbot(text, number, messageId, name);
+    administrator_chatbot(value["messages"], text, number, messageId, name , id_of_msg_that_was_replied);
     res.status(200).json("Aur beta ji");
   } catch (error) {
     console.log("Error i /webhook post", error);

@@ -1,4 +1,9 @@
+const axios = require("axios");
+const fs = require("fs");
 const { stickers_ids } = require("./constants");
+const csv = require("csv-parser");
+const createCsvWriter = require("csv-writer").createObjectCsvWriter;
+
 const getWhatsappMsg = (message) => {
   try {
     const { type } = message;
@@ -216,7 +221,81 @@ const markMessagesAsRead = (incoming_message_id) => {
   return data;
 };
 
-const administrator_chatbot = async (text, number, messageId, name) => {
+const doucment_to_json_handeler = async (mediaID) => {
+  try {
+    //fetch mediaURL
+
+    const response = await fetch(
+      `https://graph.facebook.com/v18.0/${mediaID}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN}`,
+        },
+        responseType: "arraybuffer",
+      }
+    );
+
+    const data = await response.json();
+    const mediaURL = data.url;
+    const config = {
+      method: "get",
+      url: mediaURL, //PASS THE URL HERE, WHICH YOU RECEIVED WITH THE HELP OF MEDIA ID
+      headers: {
+        Authorization: `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN}`,
+      },
+      responseType: "arraybuffer",
+    };
+
+    const productData = [];
+
+    axios(config)
+      .then(function (response) {
+        const ext = response.headers["content-type"].split("/")[1];
+
+        fs.writeFileSync(`${__dirname}/public/document.csv`, response.data);
+        // Read CSV file
+        fs.createReadStream(`${__dirname}/public/document.csv`)
+          .pipe(csv())
+          .on("data", (row) => {
+            // Process each row
+            // Here you can convert each row into JSON format
+            const images = row.images.split(",").map((image) => image.trim()); // Split string by comma and trim spaces
+            const jsonData = {
+              name: row.name,
+              description: row.description,
+              price: parseFloat(row.price),
+              discountPercentage: parseInt(row.discountPercentage),
+              stock: parseInt(row.stock),
+              brand: row.brand,
+              category: row.category,
+              imageSrc: row.imageSrc,
+              images: images,
+              expiryDate: row.expiryDate,
+            };
+            productData.push(jsonData);
+          })
+          .on("end", () => {
+            console.log("CSV to JSON conversion sucess");
+            console.log("productData", productData);
+          });
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  } catch (error) {
+    console.log("erro while conversion ", error);
+  }
+};
+
+const administrator_chatbot = async (
+  message_body,
+  text,
+  number,
+  messageId,
+  name,
+  id_of_msg_that_was_replied
+) => {
   try {
     console.log("text is", text);
     // const lowercase_text = text.toLowerCase();
@@ -225,6 +304,7 @@ const administrator_chatbot = async (text, number, messageId, name) => {
     const list = [];
     const markMessagesAsReadData = markMessagesAsRead(messageId);
     list.push(markMessagesAsReadData);
+    const type = message_body.type;
     if (text === "WishHub") {
       // await sendWhatsappMessage(text_message(number, "Yes WishHub"));
       const body = `Hello ${name}, would you like to add items to inventory?`;
@@ -272,6 +352,10 @@ const administrator_chatbot = async (text, number, messageId, name) => {
       list.push(listReplyData);
       list.push(stickerReplyData);
     } else {
+      if (type === "document" && id_of_msg_that_was_replied) {
+        const docId = message_body.document.id;
+        doucment_to_json_handeler(docId);
+      }
       const lowercase_text = text.toLowerCase();
       const data = text_message(number, lowercase_text);
       await sendWhatsappMessage(data);
