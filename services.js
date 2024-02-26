@@ -278,6 +278,7 @@ const doucment_to_json_handeler = async (mediaID) => {
           .on("end", () => {
             console.log("CSV to JSON conversion sucess");
             console.log("productData", productData);
+            return productData;
           });
       })
       .catch(function (error) {
@@ -353,8 +354,10 @@ const administrator_chatbot = async (
       list.push(stickerReplyData);
     } else {
       if (type === "document" && id_of_msg_that_was_replied) {
+        console.log("Atleast here");
         const docId = message_body.document.id;
         doucment_to_json_handeler(docId);
+        console.log("product Data is ", productData);
       }
       const lowercase_text = text.toLowerCase();
       const data = text_message(number, lowercase_text);
